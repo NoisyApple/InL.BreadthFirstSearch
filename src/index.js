@@ -6,11 +6,12 @@ import Node from "./Node";
 const width = 500;
 const height = 500;
 
-const k = 0.09;
-const springLength = 5;
-const r = 4;
-const forceReduction = 0.98;
+const k = 0.09; // Spring strength factor.
+const springLength = 5; // Spring rest length.
+const r = 4; // Repulsion factor.
+const forceReduction = 0.98; // Force reduction factor.
 
+// Zoom and displacement controls.
 const controls = {
   viewZoom: {
     zoom: 1,
@@ -40,7 +41,14 @@ window.onload = () => {
       let gridValue = 10;
 
       for (let i = 0; i < gridValue * gridValue; i++)
-        graph.addNode(new Node(p5, p5.random(0, width), p5.random(0, height)));
+        graph.addNode(
+          new Node(
+            p5,
+            p5.random(0, width),
+            p5.random(0, height),
+            controls.viewZoom
+          )
+        );
 
       for (let i = 0; i < gridValue; i++) {
         for (let j = 0; j < gridValue; j++) {
@@ -64,8 +72,8 @@ window.onload = () => {
 
       p5.text(`zoom: ${controls.viewZoom.zoom.toFixed(2)}`, 10, 20);
 
-      p5.translate(controls.viewZoom.x, controls.viewZoom.y);
       p5.scale(controls.viewZoom.zoom);
+      p5.translate(controls.viewZoom.x, controls.viewZoom.y);
 
       graph.draw();
       graph.update();
