@@ -7,7 +7,7 @@ let width;
 let height;
 
 const k = 0.09; // Spring strength factor.
-const springLength = 5; // Spring rest length.
+const springLength = 20; // Spring rest length.
 const r = 4; // Repulsion factor.
 const forceReduction = 0.98; // Force reduction factor.
 
@@ -15,6 +15,8 @@ const forceReduction = 0.98; // Force reduction factor.
 let nodeID;
 let nodeShowUp;
 let connectNodeButton;
+let sideBar;
+let deleteNodeButton;
 
 // Zoom and displacement controls.
 const controls = {
@@ -38,6 +40,8 @@ window.onload = () => {
   nodeID = document.querySelector("#NodeID");
   nodeShowUp = document.querySelector("#NodeShowUp");
   connectNodeButton = document.querySelector("#ConnectNodeButton");
+  deleteNodeButton = document.querySelector("#DeleteNodeButton");
+  sideBar = document.querySelector("#SideBar");
 
   const sketch = (p5) => {
     // SETUP +++
@@ -63,7 +67,7 @@ window.onload = () => {
         controls.viewZoom
       );
 
-      let gridValue = 10;
+      let gridValue = 5;
 
       for (let i = 0; i < gridValue * gridValue; i++)
         graph.addNode(
@@ -82,10 +86,10 @@ window.onload = () => {
           let rightIndex = i * gridValue + (j + 1);
 
           if (rightIndex < graph.nodes.length && j + 1 < gridValue)
-            graph.connectNode(actualNode, graph.getNode(rightIndex));
+            graph.connectNodes(actualNode, graph.getNode(rightIndex));
 
           if (bottomIndex < graph.nodes.length && i + 1 < gridValue)
-            graph.connectNode(actualNode, graph.getNode(bottomIndex));
+            graph.connectNodes(actualNode, graph.getNode(bottomIndex));
         }
       }
     };
@@ -126,8 +130,12 @@ window.onload = () => {
 };
 
 function addDOMListeners() {
-  connectNodeButton.addEventListener("click", (e) => {
+  connectNodeButton.addEventListener("click", () => {
     graph.action = Graph.CONNECTING_NODE;
+  });
+
+  deleteNodeButton.addEventListener("click", () => {
+    if (graph.selectedNode !== undefined) graph.deleteNode(graph.selectedNode);
   });
 }
 
@@ -180,6 +188,12 @@ function mouseReleased(p5) {
       break;
     case Graph.CONNECTING_NODE:
       break;
+  }
+
+  if (graph.selectedNode !== undefined) {
+    sideBar.style.right = "0";
+  } else {
+    sideBar.style.right = "-200px";
   }
 }
 

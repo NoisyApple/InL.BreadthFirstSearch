@@ -21,6 +21,16 @@ export default class Graph {
     this.nodes.push(node);
   }
 
+  deleteNode(node) {
+    // Eliminates all connections first.
+    for (let i = node.connectedNodes.length - 1; i >= 0; i--)
+      this.disconnectNodes(node, node.connectedNodes[i]);
+
+    // Eliminates node from graph.
+    let nodeIndex = this.nodes.indexOf(node);
+    this.nodes.splice(nodeIndex, 1);
+  }
+
   getNode(index) {
     if (index < this.nodes.length) return this.nodes[index];
   }
@@ -86,11 +96,35 @@ export default class Graph {
     });
   }
 
-  connectNode(nodeA, nodeB) {
+  connectNodes(nodeA, nodeB) {
     if (nodeA !== nodeB) {
       this.connections.push({ nodeA: nodeA, nodeB: nodeB });
       nodeA.connectedNodes.push(nodeB);
       nodeB.connectedNodes.push(nodeA);
+    }
+  }
+
+  disconnectNodes(nodeA, nodeB) {
+    if (nodeA !== nodeB) {
+      let nodeBIndex = nodeA.connectedNodes.indexOf(nodeB);
+      let nodeAIndex = nodeB.connectedNodes.indexOf(nodeA);
+
+      // Removes connected node in both sides.
+      nodeA.connectedNodes.splice(nodeBIndex, 1);
+      nodeB.connectedNodes.splice(nodeAIndex, 1);
+
+      // Removes connection.
+      for (let i = 0; i < this.connections.length; i++) {
+        if (
+          (this.connections[i].nodeA == nodeA &&
+            this.connections[i].nodeB == nodeB) ||
+          (this.connections[i].nodeA == nodeB &&
+            this.connections[i].nodeB == nodeA)
+        ) {
+          this.connections.splice(i, 1);
+          break;
+        }
+      }
     }
   }
 
@@ -120,7 +154,7 @@ export default class Graph {
         break;
       case Graph.CONNECTING_NODE:
         if (clickedNode !== undefined) {
-          this.connectNode(this.selectedNode, clickedNode);
+          this.connectNodes(this.selectedNode, clickedNode);
           this.action = Graph.NONE;
         }
         break;
