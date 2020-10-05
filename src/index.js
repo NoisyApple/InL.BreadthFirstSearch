@@ -3,6 +3,8 @@ import p5 from "p5";
 import Graph from "./Graph";
 import Node from "./Node";
 
+setFavicon(); // Dinamic favicon is set.
+
 let width;
 let height;
 
@@ -264,3 +266,40 @@ function mouseDragged(p5) {
   }
 }
 // MOTION HANDLERS ---
+
+// DINAMIC FAVICON +++
+function setFavicon() {
+  // Canvas declaration.
+  let canvas = document.createElement("canvas");
+  canvas.setAttribute("width", 40);
+  canvas.setAttribute("height", 40);
+
+  var ctx = canvas.getContext("2d");
+
+  let hue = Math.random() * 360; // Random color.
+
+  // Outer circle.
+  ctx.beginPath();
+  ctx.arc(20, 20, 20, 0, Math.PI * 2, true);
+  ctx.fillStyle = `hsl(${hue}, 50%, 45%)`;
+  ctx.fill();
+
+  // Inner circle.
+  ctx.beginPath();
+  ctx.arc(20, 20, 15, 0, Math.PI * 2, true);
+  ctx.fillStyle = `hsl(${hue}, 50%, 65%)`;
+  ctx.fill();
+
+  // Canvas image to data.
+  var img = canvas.toDataURL("image/png");
+
+  // Favicon is set.
+  var link =
+    document.querySelector("link[rel*='icon']") ||
+    document.createElement("link");
+  link.type = "image/x-icon";
+  link.rel = "shortcut icon";
+  link.href = img;
+  document.getElementsByTagName("head")[0].appendChild(link);
+}
+// DINAMIC FAVICON ---

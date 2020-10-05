@@ -25,6 +25,7 @@ export default class Node {
 
     this.p5.push();
     if (mouseOver || this.isSelected) {
+      this.p5.noFill();
       this.p5.ellipse(this.position.x, this.position.y, this.diameter + 5);
     }
 
