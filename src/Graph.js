@@ -1,8 +1,11 @@
 import p5 from "p5";
+import Node from "./Node";
 
 export default class Graph {
   static NONE = 0;
-  static CONNECTING_NODE = 1;
+  static ADDING_NODE = 1;
+  static CONNECTING_NODE = 2;
+  static DELETING_NODE = 3;
 
   constructor(p5, k, springLength, r, forceReduction, controls) {
     this.p5 = p5;
@@ -15,6 +18,11 @@ export default class Graph {
     this.selectedNode = undefined;
     this.action = Graph.NONE;
     this.controls = controls;
+    this.connectionNodes = {
+      nodeA: undefined,
+      nodeB: undefined,
+    };
+    this.updateGraph = true;
   }
 
   addNode(node) {
@@ -37,15 +45,18 @@ export default class Graph {
 
   draw() {
     // Connecting node.
-    if (this.action == Graph.CONNECTING_NODE) {
+    if (
+      this.action == Graph.CONNECTING_NODE &&
+      this.connectionNodes.nodeA != undefined
+    ) {
       let mouseVector = this.p5.createVector(
         this.p5.mouseX / this.controls.zoom - this.controls.x,
         this.p5.mouseY / this.controls.zoom - this.controls.y
       );
 
       this.p5.line(
-        this.selectedNode.position.x,
-        this.selectedNode.position.y,
+        this.connectionNodes.nodeA.position.x,
+        this.connectionNodes.nodeA.position.y,
         mouseVector.x,
         mouseVector.y
       );
@@ -66,34 +77,36 @@ export default class Graph {
   }
 
   update() {
-    this.nodes.forEach((n) => {
-      let springF = this.p5.createVector();
-      let repulsionF = this.p5.createVector();
-      let totalF = this.p5.createVector();
+    if (this.updateGraph) {
+      this.nodes.forEach((n) => {
+        let springF = this.p5.createVector();
+        let repulsionF = this.p5.createVector();
+        let totalF = this.p5.createVector();
 
-      // Spring force to connected nodes.
-      n.connectedNodes.forEach((cNode) => {
-        let force = p5.Vector.sub(n.position, cNode.position).normalize();
-        let d = p5.Vector.sub(n.position, cNode.position).mag() + 0.1;
-        force.mult(this.k * (this.springLength - d));
-        springF.add(force);
+        // Spring force to connected nodes.
+        n.connectedNodes.forEach((cNode) => {
+          let force = p5.Vector.sub(n.position, cNode.position).normalize();
+          let d = p5.Vector.sub(n.position, cNode.position).mag() + 0.1;
+          force.mult(this.k * (this.springLength - d));
+          springF.add(force);
+        });
+
+        // Repulsion force to any other node.
+        this.nodes.forEach((anyNode) => {
+          if (n !== anyNode) {
+            let force = p5.Vector.sub(n.position, anyNode.position).normalize();
+            let d = p5.Vector.sub(n.position, anyNode.position).mag() + 0.1;
+            force.mult((1 / d) * this.r);
+            repulsionF.add(force);
+          }
+        });
+
+        totalF.add(springF.add(repulsionF));
+        totalF.mult(this.forceReduction);
+
+        n.position.add(totalF);
       });
-
-      // Repulsion force to any other node.
-      this.nodes.forEach((anyNode) => {
-        if (n !== anyNode) {
-          let force = p5.Vector.sub(n.position, anyNode.position).normalize();
-          let d = p5.Vector.sub(n.position, anyNode.position).mag() + 0.1;
-          force.mult((1 / d) * this.r);
-          repulsionF.add(force);
-        }
-      });
-
-      totalF.add(springF.add(repulsionF));
-      totalF.mult(this.forceReduction);
-
-      n.position.add(totalF);
-    });
+    }
   }
 
   connectNodes(nodeA, nodeB) {
@@ -143,6 +156,7 @@ export default class Graph {
     });
 
     switch (this.action) {
+      // Default state.
       case Graph.NONE:
         if (this.selectedNode !== undefined)
           this.selectedNode.isSelected = false; // Reset previous selected node.
@@ -152,10 +166,46 @@ export default class Graph {
         if (clickedNode !== undefined) clickedNode.isSelected = true;
 
         break;
+
+      // Adding a node.
+      case Graph.ADDING_NODE:
+        let newNode = new Node(
+          this.p5,
+          this.p5.mouseX / this.controls.zoom - this.controls.x,
+          this.p5.mouseY / this.controls.zoom - this.controls.y,
+          this.controls
+        );
+
+        this.addNode(newNode);
+        this.selectedNode = newNode;
+        break;
+
+      // Connecting nodes.
       case Graph.CONNECTING_NODE:
         if (clickedNode !== undefined) {
-          this.connectNodes(this.selectedNode, clickedNode);
-          this.action = Graph.NONE;
+          if (
+            this.connectionNodes.nodeA == undefined &&
+            this.connectionNodes.nodeB == undefined
+          ) {
+            this.connectionNodes.nodeA = clickedNode;
+          } else if (
+            this.connectionNodes.nodeA != undefined &&
+            this.connectionNodes.nodeB == undefined
+          ) {
+            this.connectionNodes.nodeB = clickedNode;
+            this.connectNodes(
+              this.connectionNodes.nodeA,
+              this.connectionNodes.nodeB
+            );
+            this.connectionNodes = { nodeA: undefined, nodeB: undefined };
+          }
+        }
+        break;
+
+      // Deleting nodes.
+      case Graph.DELETING_NODE:
+        if (clickedNode !== undefined) {
+          this.deleteNode(clickedNode);
         }
         break;
     }

@@ -7,16 +7,24 @@ let width;
 let height;
 
 const k = 0.09; // Spring strength factor.
-const springLength = 20; // Spring rest length.
+const springLength = 50; // Spring rest length.
 const r = 4; // Repulsion factor.
 const forceReduction = 0.98; // Force reduction factor.
 
 // DOM ELEMENTS.
 let nodeID;
 let nodeShowUp;
-let connectNodeButton;
 let sideBar;
+let playPauseButton;
+let addNodeButton;
+let connectNodeButton;
 let deleteNodeButton;
+let cancelOptionButton;
+
+let playIcon;
+let pauseIcon;
+
+let graph;
 
 // Zoom and displacement controls.
 const controls = {
@@ -34,21 +42,28 @@ const controls = {
   },
 };
 
-let graph;
-
 window.onload = () => {
+  // DOM elements initialization.
   nodeID = document.querySelector("#NodeID");
   nodeShowUp = document.querySelector("#NodeShowUp");
+  sideBar = document.querySelector("#SideBar");
+  playPauseButton = document.querySelector("#PlayPauseButton");
+  addNodeButton = document.querySelector("#AddNodeButton");
   connectNodeButton = document.querySelector("#ConnectNodeButton");
   deleteNodeButton = document.querySelector("#DeleteNodeButton");
-  sideBar = document.querySelector("#SideBar");
+  cancelOptionButton = document.querySelector("#CancelOptionButton");
 
+  playIcon = document.querySelector("#PlayIcon");
+  pauseIcon = document.querySelector("#PauseIcon");
+
+  // P5.
   const sketch = (p5) => {
     // SETUP +++
     p5.setup = () => {
       let canvas = p5.createCanvas(p5.windowWidth, p5.windowHeight);
       canvas.parent("Canvas");
 
+      // Event listeners.
       addDOMListeners();
       canvas.mouseWheel((e) => mouseWheel(e, p5));
       canvas.mousePressed(() => mousePressed(p5));
@@ -67,6 +82,11 @@ window.onload = () => {
         controls.viewZoom
       );
 
+      // Show icon depending on updateGraph value.
+      playIcon.style.display = !graph.updateGraph ? "block" : "none";
+      pauseIcon.style.display = graph.updateGraph ? "block" : "none";
+
+      // EXAMPLE NODES +++
       let gridValue = 5;
 
       for (let i = 0; i < gridValue * gridValue; i++)
@@ -92,6 +112,7 @@ window.onload = () => {
             graph.connectNodes(actualNode, graph.getNode(bottomIndex));
         }
       }
+      // EXAMPLE NODES ---
     };
     // SETUP ---
 
@@ -100,14 +121,17 @@ window.onload = () => {
       // Background.
       p5.push();
       p5.background("#ddd");
-      p5.text(`zoom: ${controls.viewZoom.zoom.toFixed(2)}`, 10, 20);
-      p5.text(`action: ${graph.action}`, 10, 40);
-      p5.text(`dragging: ${controls.viewPosition.isDragging}`, 10, 60);
-      p5.text(
-        `selected node: ${graph.selectedNode ? graph.selectedNode.id : "None"}`,
-        10,
-        80
-      );
+
+      // CONFIG DATA ON SCREEN.
+      // p5.text(`zoom: ${controls.viewZoom.zoom.toFixed(2)}`, 10, 20);
+      // p5.text(`action: ${graph.action}`, 10, 40);
+      // p5.text(`dragging: ${controls.viewPosition.isDragging}`, 10, 60);
+      // p5.text(
+      //   `selected node: ${graph.selectedNode ? graph.selectedNode.id : "None"}`,
+      //   10,
+      //   80
+      // );
+
       p5.noStroke();
       p5.fill(150);
       for (let i = 0; i < width / 20; i++) {
@@ -129,14 +153,62 @@ window.onload = () => {
   new p5(sketch);
 };
 
+// DOM Event Listeners.
 function addDOMListeners() {
-  connectNodeButton.addEventListener("click", () => {
-    graph.action = Graph.CONNECTING_NODE;
-  });
+  playPauseButton.addEventListener("click", () => toggleGraphUpdate());
 
-  deleteNodeButton.addEventListener("click", () => {
-    if (graph.selectedNode !== undefined) graph.deleteNode(graph.selectedNode);
-  });
+  cancelOptionButton.addEventListener("click", () =>
+    actionSelected(Graph.NONE)
+  );
+
+  addNodeButton.addEventListener("click", () =>
+    actionSelected(Graph.ADDING_NODE)
+  );
+
+  connectNodeButton.addEventListener("click", () =>
+    actionSelected(Graph.CONNECTING_NODE)
+  );
+
+  deleteNodeButton.addEventListener("click", () =>
+    actionSelected(Graph.DELETING_NODE)
+  );
+}
+
+// Toggles graph's updateGraph value.
+function toggleGraphUpdate() {
+  graph.updateGraph = !graph.updateGraph;
+
+  playIcon.style.display = !graph.updateGraph ? "block" : "none";
+  pauseIcon.style.display = graph.updateGraph ? "block" : "none";
+}
+
+// Updates graph's action.
+function actionSelected(action) {
+  addNodeButton.classList.remove("option-selected");
+  connectNodeButton.classList.remove("option-selected");
+  deleteNodeButton.classList.remove("option-selected");
+
+  switch (action) {
+    case Graph.NONE:
+      cancelOptionButton.setAttribute("disabled", "");
+      graph.action = Graph.NONE;
+      break;
+    case Graph.ADDING_NODE:
+      addNodeButton.classList.add("option-selected");
+      cancelOptionButton.removeAttribute("disabled");
+      graph.action = Graph.ADDING_NODE;
+      break;
+    case Graph.CONNECTING_NODE:
+      connectNodeButton.classList.add("option-selected");
+      cancelOptionButton.removeAttribute("disabled");
+      graph.action = Graph.CONNECTING_NODE;
+      break;
+    case Graph.DELETING_NODE:
+      deleteNodeButton.classList.add("option-selected");
+      cancelOptionButton.removeAttribute("disabled");
+      graph.action = Graph.DELETING_NODE;
+      break;
+  }
 }
 
 // ZOOM HANDLER +++
@@ -178,23 +250,6 @@ function mouseReleased(p5) {
   controls.viewPosition.prevY = null;
 
   graph.handleClick();
-  switch (graph.action) {
-    case Graph.NONE: // Mouse clicked.
-      if (graph.selectedNode !== undefined) {
-        nodeID.textContent = `ID: ${graph.selectedNode.id}`;
-        nodeShowUp.style.backgroundColor = `hsl(${graph.selectedNode.color}, 50%, 65%)`;
-        nodeShowUp.style.borderColor = `hsl(${graph.selectedNode.color}, 50%, 45%)`;
-      }
-      break;
-    case Graph.CONNECTING_NODE:
-      break;
-  }
-
-  if (graph.selectedNode !== undefined) {
-    sideBar.style.right = "0";
-  } else {
-    sideBar.style.right = "-200px";
-  }
 }
 
 function mouseDragged(p5) {
