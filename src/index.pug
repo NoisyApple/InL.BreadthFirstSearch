@@ -14,9 +14,11 @@ html(lang="en")
             svg#PauseIcon(viewBox="0 0 448 512")
               path(d="M144 479H48c-26.5 0-48-21.5-48-48V79c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48zm304-48V79c0-26.5-21.5-48-48-48h-96c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h96c26.5 0 48-21.5 48-48z")
           .option-label Play / Pause
-        //- button#SelectNodeButton.option-button.option-selected
-        //-   svg(viewBox="0 0 320 512")
-        //-     path(d="M302.189 329.126H196.105l55.831 135.993c3.889 9.428-.555 19.999-9.444 23.999l-49.165 21.427c-9.165 4-19.443-.571-23.332-9.714l-53.053-129.136-86.664 89.138C18.729 472.71 0 463.554 0 447.977V18.299C0 1.899 19.921-6.096 30.277 5.443l284.412 292.542c11.472 11.179 3.007 31.141-12.5 31.141z")
+        .option-block
+          button#SelectNodeButton.option-button
+            svg(viewBox="0 0 320 512")
+              path(d="M302.189 329.126H196.105l55.831 135.993c3.889 9.428-.555 19.999-9.444 23.999l-49.165 21.427c-9.165 4-19.443-.571-23.332-9.714l-53.053-129.136-86.664 89.138C18.729 472.71 0 463.554 0 447.977V18.299C0 1.899 19.921-6.096 30.277 5.443l284.412 292.542c11.472 11.179 3.007 31.141-12.5 31.141z")
+          .option-label Select Node
         .option-block
           button#AddNodeButton.option-button
             svg(viewBox="0 0 448 512")
@@ -39,7 +41,12 @@ html(lang="en")
           .option-label Cancel
       #Canvas
       #SideBar
-        div#NodeShowUp
-        h1#NodeID ID: 0
-        //- button#ConnectNodeButton Connect
-        //- button#DeleteNodeButton Delete
+        #SideBarHeader
+          #NodeShowUp.node-show-up
+          h1#NodeLabel ---
+        h2#NodeID ID: 0
+        #ConnectedNodes
+          h4 Connected Nodes
+          #SideBarConnectedNodes
+        #SideBarFooter
+          button#SideBarDeleteNodeButton DISCONNECT

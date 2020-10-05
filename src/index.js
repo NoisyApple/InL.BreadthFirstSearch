@@ -8,16 +8,23 @@ setFavicon(); // Dinamic favicon is set.
 let width;
 let height;
 
-const k = 0.09; // Spring strength factor.
-const springLength = 50; // Spring rest length.
+const k = 0.01; // Spring strength factor.
+const springLength = 100; // Spring rest length.
 const r = 4; // Repulsion factor.
 const forceReduction = 0.98; // Force reduction factor.
 
+let sideBarSelectedNode = undefined;
+
 // DOM ELEMENTS.
-let nodeID;
-let nodeShowUp;
 let sideBar;
+let nodeShowUp;
+let nodeLabel;
+let nodeID;
+let sideBarConnectedNodes;
+let sideBarDeleteNodeButton;
+
 let playPauseButton;
+let selectNodeButton;
 let addNodeButton;
 let connectNodeButton;
 let deleteNodeButton;
@@ -46,10 +53,15 @@ const controls = {
 
 window.onload = () => {
   // DOM elements initialization.
-  nodeID = document.querySelector("#NodeID");
-  nodeShowUp = document.querySelector("#NodeShowUp");
   sideBar = document.querySelector("#SideBar");
+  nodeShowUp = document.querySelector("#NodeShowUp");
+  nodeLabel = document.querySelector("#NodeLabel");
+  nodeID = document.querySelector("#NodeID");
+  sideBarConnectedNodes = document.querySelector("#SideBarConnectedNodes");
+  sideBarDeleteNodeButton = document.querySelector("#SideBarDeleteNodeButton");
+
   playPauseButton = document.querySelector("#PlayPauseButton");
+  selectNodeButton = document.querySelector("#SelectNodeButton");
   addNodeButton = document.querySelector("#AddNodeButton");
   connectNodeButton = document.querySelector("#ConnectNodeButton");
   deleteNodeButton = document.querySelector("#DeleteNodeButton");
@@ -89,30 +101,55 @@ window.onload = () => {
       pauseIcon.style.display = graph.updateGraph ? "block" : "none";
 
       // EXAMPLE NODES +++
-      let gridValue = 5;
+      // let gridValue = 5;
 
-      for (let i = 0; i < gridValue * gridValue; i++)
-        graph.addNode(
-          new Node(
-            p5,
-            p5.random(0, width),
-            p5.random(0, height),
-            controls.viewZoom
-          )
+      // for (let i = 0; i < gridValue * gridValue; i++)
+      //   graph.addNode(
+      //     new Node(
+      //       p5,
+      //       p5.random(0, width),
+      //       p5.random(0, height),
+      //       controls.viewZoom
+      //     )
+      //   );
+
+      // for (let i = 0; i < gridValue; i++) {
+      //   for (let j = 0; j < gridValue; j++) {
+      //     let actualNode = graph.getNode(i * gridValue + j);
+      //     let bottomIndex = (i + 1) * gridValue + j;
+      //     let rightIndex = i * gridValue + (j + 1);
+
+      //     if (rightIndex < graph.nodes.length && j + 1 < gridValue)
+      //       graph.connectNodes(actualNode, graph.getNode(rightIndex));
+
+      //     if (bottomIndex < graph.nodes.length && i + 1 < gridValue)
+      //       graph.connectNodes(actualNode, graph.getNode(bottomIndex));
+      //   }
+      // }
+      // EXAMPLE NODES ---
+
+      // EXAMPLE NODES +++
+      let nodesToConnect = 20;
+
+      let mainNode = new Node(
+        p5,
+        p5.random(0, width),
+        p5.random(0, height),
+        controls.viewZoom
+      );
+
+      graph.addNode(mainNode);
+
+      for (let i = 0; i < nodesToConnect; i++) {
+        let newNode = new Node(
+          p5,
+          p5.random(0, width),
+          p5.random(0, height),
+          controls.viewZoom
         );
 
-      for (let i = 0; i < gridValue; i++) {
-        for (let j = 0; j < gridValue; j++) {
-          let actualNode = graph.getNode(i * gridValue + j);
-          let bottomIndex = (i + 1) * gridValue + j;
-          let rightIndex = i * gridValue + (j + 1);
-
-          if (rightIndex < graph.nodes.length && j + 1 < gridValue)
-            graph.connectNodes(actualNode, graph.getNode(rightIndex));
-
-          if (bottomIndex < graph.nodes.length && i + 1 < gridValue)
-            graph.connectNodes(actualNode, graph.getNode(bottomIndex));
-        }
+        graph.addNode(newNode);
+        graph.connectNodes(mainNode, newNode);
       }
       // EXAMPLE NODES ---
     };
@@ -163,6 +200,10 @@ function addDOMListeners() {
     actionSelected(Graph.NONE)
   );
 
+  selectNodeButton.addEventListener("click", () =>
+    actionSelected(Graph.SELECTING_NODE)
+  );
+
   addNodeButton.addEventListener("click", () =>
     actionSelected(Graph.ADDING_NODE)
   );
@@ -174,6 +215,13 @@ function addDOMListeners() {
   deleteNodeButton.addEventListener("click", () =>
     actionSelected(Graph.DELETING_NODE)
   );
+
+  sideBarDeleteNodeButton.addEventListener("click", () => {
+    if (sideBarSelectedNode != undefined && graph.selectedNode != undefined) {
+      graph.disconnectNodes(sideBarSelectedNode, graph.selectedNode);
+      setSideBarData(graph.selectedNode);
+    }
+  });
 }
 
 // Toggles graph's updateGraph value.
@@ -186,6 +234,7 @@ function toggleGraphUpdate() {
 
 // Updates graph's action.
 function actionSelected(action) {
+  selectNodeButton.classList.remove("option-selected");
   addNodeButton.classList.remove("option-selected");
   connectNodeButton.classList.remove("option-selected");
   deleteNodeButton.classList.remove("option-selected");
@@ -194,6 +243,11 @@ function actionSelected(action) {
     case Graph.NONE:
       cancelOptionButton.setAttribute("disabled", "");
       graph.action = Graph.NONE;
+      break;
+    case Graph.SELECTING_NODE:
+      selectNodeButton.classList.add("option-selected");
+      cancelOptionButton.setAttribute("disabled", "");
+      graph.action = Graph.SELECTING_NODE;
       break;
     case Graph.ADDING_NODE:
       addNodeButton.classList.add("option-selected");
@@ -252,6 +306,67 @@ function mouseReleased(p5) {
   controls.viewPosition.prevY = null;
 
   graph.handleClick();
+
+  if (graph.action == Graph.SELECTING_NODE) {
+    if (graph.selectedNode != undefined) {
+      sideBar.style.right = "0px";
+      setSideBarData(graph.selectedNode);
+    } else {
+      sideBar.style.right = "-250px";
+    }
+  }
+}
+
+// SideBar data generation.
+function setSideBarData(node) {
+  nodeShowUp.style.backgroundColor = `hsl(${node.color}deg, 50%, 65%)`;
+  nodeShowUp.style.borderColor = `hsl(${node.color}deg, 50%, 45%)`;
+
+  nodeLabel.textContent = Graph.NAMES[node.id % Graph.NAMES.length];
+  nodeID.textContent = `ID: ${node.id}`;
+
+  sideBarConnectedNodes.innerHTML = "";
+
+  node.connectedNodes.forEach((cNode) => {
+    let cNodeBlock = document.createElement("div");
+    let cNodeShowUp = document.createElement("div");
+    let cNodeInfo = document.createElement("div");
+
+    sideBarDeleteNodeButton.setAttribute("disabled", "");
+
+    cNodeBlock.classList.add("connected-node-block");
+    cNodeBlock.addEventListener("click", () =>
+      nodeBlockClickHandler(cNodeBlock, cNode)
+    );
+
+    cNodeShowUp.classList.add("connected-node");
+    cNodeShowUp.classList.add("node-show-up");
+    cNodeShowUp.style.backgroundColor = `hsl(${cNode.color}deg, 50%, 65%)`;
+    cNodeShowUp.style.borderColor = `hsl(${cNode.color}deg, 50%, 45%)`;
+
+    cNodeInfo.textContent = `${Graph.NAMES[cNode.id % Graph.NAMES.length]} => ${
+      cNode.id
+    }`;
+
+    cNodeBlock.appendChild(cNodeShowUp);
+    cNodeBlock.appendChild(cNodeInfo);
+
+    sideBarConnectedNodes.appendChild(cNodeBlock);
+  });
+
+  // Click handler for each node block.
+  function nodeBlockClickHandler(element, cNode) {
+    let nodeBlocks = document.querySelectorAll(".connected-node-block");
+
+    sideBarSelectedNode = cNode;
+    sideBarDeleteNodeButton.removeAttribute("disabled");
+
+    Array.from(nodeBlocks).forEach((nBlock) => {
+      nBlock.classList.remove("selected-node-block");
+    });
+
+    element.classList.add("selected-node-block");
+  }
 }
 
 function mouseDragged(p5) {

@@ -1,4 +1,5 @@
 import p5 from "p5";
+import Graph from "./Graph";
 
 export default class Node {
   static idCount = 0;
@@ -34,6 +35,17 @@ export default class Node {
     this.p5.stroke(this.color, 50, 45);
     this.p5.strokeWeight(2);
     this.p5.ellipse(this.position.x, this.position.y, this.diameter);
+
+    // this.p5.fill(this.color, 50, 45);
+    // this.p5.stroke(this.color, 50, 35);
+    // this.p5.noStroke();
+    this.p5.textSize(18);
+    this.p5.textStyle(this.p5.BOLD);
+    this.p5.text(
+      Graph.NAMES[this.id % Graph.NAMES.length],
+      this.position.x + this.diameter / 1.5,
+      this.position.y - this.diameter / 2 / 2
+    );
     this.p5.pop();
   }
 }

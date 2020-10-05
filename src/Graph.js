@@ -3,9 +3,40 @@ import Node from "./Node";
 
 export default class Graph {
   static NONE = 0;
-  static ADDING_NODE = 1;
-  static CONNECTING_NODE = 2;
-  static DELETING_NODE = 3;
+  static SELECTING_NODE = 1;
+  static ADDING_NODE = 2;
+  static CONNECTING_NODE = 3;
+  static DELETING_NODE = 4;
+
+  static NAMES = [
+    "Harry",
+    "Ross",
+    "Bruce",
+    "Cook",
+    "Carolyn",
+    "Morgan",
+    "Albert",
+    "Walker",
+    "Randy",
+    "Reed",
+    "Larry",
+    "Barnes",
+    "Lois",
+    "Wilson",
+    "Jesse",
+    "Campbell",
+    "Ernest",
+    "Rogers",
+    "Theresa",
+    "Patterson",
+    "Henry",
+    "Simmons",
+    "Michelle",
+    "Perry",
+    "Frank",
+    "Butler",
+    "Shirley",
+  ];
 
   constructor(p5, k, springLength, r, forceReduction, controls) {
     this.p5 = p5;
@@ -157,7 +188,7 @@ export default class Graph {
 
     switch (this.action) {
       // Default state.
-      case Graph.NONE:
+      case Graph.SELECTING_NODE:
         if (this.selectedNode !== undefined)
           this.selectedNode.isSelected = false; // Reset previous selected node.
 

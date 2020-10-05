@@ -64,6 +64,7 @@ body {
       border: none;
       outline: none;
       transition: background-color 0.25s;
+      cursor: pointer;
 
       &:hover:not(:disabled) {
         background-color: #444c;
@@ -71,6 +72,7 @@ body {
 
       &:disabled {
         opacity: 0.5;
+        cursor: not-allowed;
       }
 
       svg {
@@ -118,24 +120,128 @@ body {
 
   #SideBar {
     position: absolute;
-    right: -200px;
+    right: -250px;
     top: 50%;
     height: 90%;
-    width: 200px;
+    width: 250px;
     background: #fff4;
     transform: translateY(-50%);
     border-radius: 20px 0 0 20px;
-    padding: 20px;
     backdrop-filter: blur(5px);
     box-shadow: 0 0 2.5px 0px #333;
     transition: right 1s;
-  }
+    display: flex;
+    flex-direction: column;
 
-  #NodeShowUp {
-    width: 50px;
-    height: 50px;
-    background: hsl(180deg, 50%, 65%);
-    border: 5px solid hsl(180deg, 50%, 45%);
-    border-radius: 100%;
+    .node-show-up {
+      background: hsl(180deg, 50%, 65%);
+      border: 5px solid hsl(180deg, 50%, 45%);
+      border-radius: 100%;
+    }
+
+    .connected-node-block {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 5px;
+      cursor: pointer;
+
+      &:nth-child(2n - 1) {
+        background-color: #4444;
+      }
+
+      &:nth-child(2n) {
+        background-color: #4442;
+      }
+
+      &:hover {
+        background: #ffbd0088;
+      }
+
+      &.selected-node-block {
+        background: #ffbd00cc;
+      }
+    }
+
+    #ConnectedNodes {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: auto;
+      margin: 5px 10px 0 10px;
+    }
+
+    #SideBarConnectedNodes {
+      flex: 1;
+      overflow: auto;
+      border-radius: 10px;
+      background-color: #4441;
+
+      &::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #4441;
+        border-radius: 0 10px 10px 0;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #888c;
+        border-radius: 0 10px 10px 0;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #888a;
+      }
+    }
+
+    .connected-node {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid hsl(180deg, 50%, 45%);
+      margin-right: 5px;
+    }
+
+    #SideBarHeader {
+      margin: 10px 10px 0 10px;
+      display: flex;
+
+      #NodeShowUp {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+      }
+    }
+
+    #NodeID {
+      margin: 0 10px;
+    }
+
+    #SideBarFooter {
+      padding: 10px;
+      border-radius: 0 0 0 20px;
+
+      #SideBarDeleteNodeButton {
+        width: 100%;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #ff0054;
+        color: white;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+          background-color: #ff0054cc;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
   }
 }
