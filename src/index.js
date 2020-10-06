@@ -16,9 +16,15 @@ const forceReduction = 0.98; // Force reduction factor.
 let sideBarSelectedNode = undefined;
 
 // DOM ELEMENTS.
+let renameNodeModal;
+let exitModalButton;
+let renameNodeInput;
+let renameNodeButton;
+
 let sideBar;
 let nodeShowUp;
 let nodeLabel;
+let editButton;
 let nodeID;
 let sideBarConnectedNodes;
 let sideBarDeleteNodeButton;
@@ -33,6 +39,7 @@ let cancelOptionButton;
 let playIcon;
 let pauseIcon;
 
+// Graph reference.
 let graph;
 
 // Zoom and displacement controls.
@@ -53,9 +60,15 @@ const controls = {
 
 window.onload = () => {
   // DOM elements initialization.
+  renameNodeModal = document.querySelector("#RenameNodeModal");
+  exitModalButton = document.querySelector("#ExitModalButton");
+  renameNodeInput = document.querySelector("#RenameNodeInput");
+  renameNodeButton = document.querySelector("#RenameNodeButton");
+
   sideBar = document.querySelector("#SideBar");
   nodeShowUp = document.querySelector("#NodeShowUp");
   nodeLabel = document.querySelector("#NodeLabel");
+  editButton = document.querySelector("#EditButton");
   nodeID = document.querySelector("#NodeID");
   sideBarConnectedNodes = document.querySelector("#SideBarConnectedNodes");
   sideBarDeleteNodeButton = document.querySelector("#SideBarDeleteNodeButton");
@@ -93,64 +106,68 @@ window.onload = () => {
         springLength,
         r,
         forceReduction,
-        controls.viewZoom
+        controls.viewZoom,
+        { renameNodeModal, exitModalButton, renameNodeInput }
       );
+
+      renameNodeModal.style.display = "flex";
+      // sideBar.style.right = "-250px";
 
       // Show icon depending on updateGraph value.
       playIcon.style.display = !graph.updateGraph ? "block" : "none";
       pauseIcon.style.display = graph.updateGraph ? "block" : "none";
 
       // EXAMPLE NODES +++
-      // let gridValue = 5;
+      let gridValue = 5;
 
-      // for (let i = 0; i < gridValue * gridValue; i++)
-      //   graph.addNode(
-      //     new Node(
-      //       p5,
-      //       p5.random(0, width),
-      //       p5.random(0, height),
-      //       controls.viewZoom
-      //     )
-      //   );
+      for (let i = 0; i < gridValue * gridValue; i++)
+        graph.addNode(
+          new Node(
+            p5,
+            p5.random(0, width),
+            p5.random(0, height),
+            controls.viewZoom
+          )
+        );
 
-      // for (let i = 0; i < gridValue; i++) {
-      //   for (let j = 0; j < gridValue; j++) {
-      //     let actualNode = graph.getNode(i * gridValue + j);
-      //     let bottomIndex = (i + 1) * gridValue + j;
-      //     let rightIndex = i * gridValue + (j + 1);
+      for (let i = 0; i < gridValue; i++) {
+        for (let j = 0; j < gridValue; j++) {
+          let actualNode = graph.getNode(i * gridValue + j);
+          let bottomIndex = (i + 1) * gridValue + j;
+          let rightIndex = i * gridValue + (j + 1);
 
-      //     if (rightIndex < graph.nodes.length && j + 1 < gridValue)
-      //       graph.connectNodes(actualNode, graph.getNode(rightIndex));
+          if (rightIndex < graph.nodes.length && j + 1 < gridValue)
+            graph.connectNodes(actualNode, graph.getNode(rightIndex));
 
-      //     if (bottomIndex < graph.nodes.length && i + 1 < gridValue)
-      //       graph.connectNodes(actualNode, graph.getNode(bottomIndex));
-      //   }
-      // }
+          if (bottomIndex < graph.nodes.length && i + 1 < gridValue)
+            graph.connectNodes(actualNode, graph.getNode(bottomIndex));
+        }
+      }
       // EXAMPLE NODES ---
 
       // EXAMPLE NODES +++
-      let nodesToConnect = 20;
+      // let nodesToConnect = 20;
 
-      let mainNode = new Node(
-        p5,
-        p5.random(0, width),
-        p5.random(0, height),
-        controls.viewZoom
-      );
+      // let mainNode = new Node(
+      //   p5,
+      //   p5.random(0, width),
+      //   p5.random(0, height),
+      //   controls.viewZoom
+      // );
 
-      graph.addNode(mainNode);
+      // graph.addNode(mainNode);
 
-      for (let i = 0; i < nodesToConnect; i++) {
-        let newNode = new Node(
-          p5,
-          p5.random(0, width),
-          p5.random(0, height),
-          controls.viewZoom
-        );
+      // for (let i = 0; i < nodesToConnect; i++) {
+      //   let newNode = new Node(
+      //     p5,
+      //     p5.random(0, width),
+      //     p5.random(0, height),
+      //     controls.viewZoom
+      //   );
 
-        graph.addNode(newNode);
-        graph.connectNodes(mainNode, newNode);
-      }
+      //   graph.addNode(newNode);
+      //   graph.connectNodes(mainNode, newNode);
+      // }
       // EXAMPLE NODES ---
     };
     // SETUP ---
@@ -195,6 +212,41 @@ window.onload = () => {
 // DOM Event Listeners.
 function addDOMListeners() {
   playPauseButton.addEventListener("click", () => toggleGraphUpdate());
+
+  exitModalButton.addEventListener("click", () => {
+    renameNodeModal.style.visibility = "hidden";
+    renameNodeModal.style.opacity = "0";
+  });
+
+  editButton.addEventListener("click", () => {
+    exitModalButton.style.display = "block";
+
+    renameNodeModal.style.visibility = "visible";
+    renameNodeModal.style.opacity = "1";
+  });
+
+  renameNodeInput.addEventListener("keypress", (e) => {
+    if (e.keyCode == 13) setName();
+  });
+
+  renameNodeInput.addEventListener("input", () => {
+    renameNodeInput.classList.remove("bad-input");
+  });
+
+  renameNodeButton.addEventListener("click", setName);
+
+  function setName() {
+    if (renameNodeInput.value.length > 0) {
+      graph.selectedNode.label = renameNodeInput.value;
+      renameNodeInput.value = "";
+      renameNodeModal.style.visibility = "hidden";
+      renameNodeModal.style.opacity = "0";
+      graph.updateGraph = true;
+      setSideBarData(graph.selectedNode);
+    } else {
+      renameNodeInput.classList.add("bad-input");
+    }
+  }
 
   cancelOptionButton.addEventListener("click", () =>
     actionSelected(Graph.NONE)
@@ -322,7 +374,7 @@ function setSideBarData(node) {
   nodeShowUp.style.backgroundColor = `hsl(${node.color}deg, 50%, 65%)`;
   nodeShowUp.style.borderColor = `hsl(${node.color}deg, 50%, 45%)`;
 
-  nodeLabel.textContent = Graph.NAMES[node.id % Graph.NAMES.length];
+  nodeLabel.textContent = node.label;
   nodeID.textContent = `ID: ${node.id}`;
 
   sideBarConnectedNodes.innerHTML = "";
@@ -344,9 +396,7 @@ function setSideBarData(node) {
     cNodeShowUp.style.backgroundColor = `hsl(${cNode.color}deg, 50%, 65%)`;
     cNodeShowUp.style.borderColor = `hsl(${cNode.color}deg, 50%, 45%)`;
 
-    cNodeInfo.textContent = `${Graph.NAMES[cNode.id % Graph.NAMES.length]} => ${
-      cNode.id
-    }`;
+    cNodeInfo.textContent = `${cNode.label} => ${cNode.id}`;
 
     cNodeBlock.appendChild(cNodeShowUp);
     cNodeBlock.appendChild(cNodeInfo);

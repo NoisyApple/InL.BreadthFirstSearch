@@ -9,44 +9,55 @@ html(lang="en")
       #Options
         .option-block
           button#PlayPauseButton.option-button
-            svg#PlayIcon(viewBox="0 0 448 512")
+            svg.svg-centered#PlayIcon(viewBox="0 0 448 512")
               path(d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z")
-            svg#PauseIcon(viewBox="0 0 448 512")
+            svg.svg-centered#PauseIcon(viewBox="0 0 448 512")
               path(d="M144 479H48c-26.5 0-48-21.5-48-48V79c0-26.5 21.5-48 48-48h96c26.5 0 48 21.5 48 48v352c0 26.5-21.5 48-48 48zm304-48V79c0-26.5-21.5-48-48-48h-96c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h96c26.5 0 48-21.5 48-48z")
           .option-label Play / Pause
         .option-block
           button#SelectNodeButton.option-button
-            svg(viewBox="0 0 320 512")
+            svg.svg-centered(viewBox="0 0 320 512")
               path(d="M302.189 329.126H196.105l55.831 135.993c3.889 9.428-.555 19.999-9.444 23.999l-49.165 21.427c-9.165 4-19.443-.571-23.332-9.714l-53.053-129.136-86.664 89.138C18.729 472.71 0 463.554 0 447.977V18.299C0 1.899 19.921-6.096 30.277 5.443l284.412 292.542c11.472 11.179 3.007 31.141-12.5 31.141z")
           .option-label Select Node
         .option-block
           button#AddNodeButton.option-button
-            svg(viewBox="0 0 448 512")
+            svg.svg-centered(viewBox="0 0 448 512")
               path(d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z")
           .option-label Add Node
         .option-block
           button#ConnectNodeButton.option-button
-            svg(viewBox="0 0 384 512")
+            svg.svg-centered(viewBox="0 0 384 512")
               path(d="M320,32a32,32,0,0,0-64,0v96h64Zm48,128H16A16,16,0,0,0,0,176v32a16,16,0,0,0,16,16H32v32A160.07,160.07,0,0,0,160,412.8V512h64V412.8A160.07,160.07,0,0,0,352,256V224h16a16,16,0,0,0,16-16V176A16,16,0,0,0,368,160ZM128,32a32,32,0,0,0-64,0v96h64Z")
           .option-label Connect Node
         .option-block
           button#DeleteNodeButton.option-button
-            svg(viewBox="0 0 448 512")
+            svg.svg-centered(viewBox="0 0 448 512")
               path(d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z")
           .option-label Delete Node
         .option-block
           button#CancelOptionButton.option-button(disabled)
-            svg(viewBox="0 0 512 512")
+            svg.svg-centered(viewBox="0 0 512 512")
               path(d="M256 8C119.034 8 8 119.033 8 256s111.034 248 248 248 248-111.034 248-248S392.967 8 256 8zm130.108 117.892c65.448 65.448 70 165.481 20.677 235.637L150.47 105.216c70.204-49.356 170.226-44.735 235.638 20.676zM125.892 386.108c-65.448-65.448-70-165.481-20.677-235.637L361.53 406.784c-70.203 49.356-170.226 44.736-235.638-20.676z")
           .option-label Cancel
       #Canvas
       #SideBar
         #SideBarHeader
           #NodeShowUp.node-show-up
-          h1#NodeLabel ---
-        h2#NodeID ID: 0
+          h2#NodeID ID: 0
+        #LabelBlock
+          h2#NodeLabel ---
+          svg#EditButton(viewBox="0 0 512 512")
+            path(d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z")
         #ConnectedNodes
           h4 Connected Nodes
           #SideBarConnectedNodes
         #SideBarFooter
           button#SideBarDeleteNodeButton DISCONNECT
+      #RenameNodeModal
+        .wrap
+          h1#ModalTitle Enter a name
+          input#RenameNodeInput(type="text")
+          button#RenameNodeButton OK
+        #ExitModalButton
+          svg.svg-centered(viewBox="0 0 352 512")
+            path(d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z")

@@ -38,7 +38,7 @@ export default class Graph {
     "Shirley",
   ];
 
-  constructor(p5, k, springLength, r, forceReduction, controls) {
+  constructor(p5, k, springLength, r, forceReduction, controls, DOMElements) {
     this.p5 = p5;
     this.k = k;
     this.springLength = springLength;
@@ -54,6 +54,7 @@ export default class Graph {
       nodeB: undefined,
     };
     this.updateGraph = true;
+    this.DOMElements = DOMElements;
   }
 
   addNode(node) {
@@ -200,6 +201,19 @@ export default class Graph {
 
       // Adding a node.
       case Graph.ADDING_NODE:
+        const {
+          renameNodeModal,
+          exitModalButton,
+          renameNodeInput,
+        } = this.DOMElements;
+
+        this.updateGraph = false;
+
+        exitModalButton.style.display = "none";
+
+        renameNodeModal.style.visibility = "visible";
+        renameNodeModal.style.opacity = "1";
+
         let newNode = new Node(
           this.p5,
           this.p5.mouseX / this.controls.zoom - this.controls.x,

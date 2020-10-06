@@ -13,6 +13,7 @@ export default class Node {
     this.diameter = 20;
     this.isSelected = false;
     this.color = Math.floor(Math.random() * 360);
+    this.label = Graph.NAMES[this.id % Graph.NAMES.length];
   }
 
   draw() {
@@ -42,7 +43,7 @@ export default class Node {
     this.p5.textSize(18);
     this.p5.textStyle(this.p5.BOLD);
     this.p5.text(
-      Graph.NAMES[this.id % Graph.NAMES.length],
+      this.label,
       this.position.x + this.diameter / 1.5,
       this.position.y - this.diameter / 2 / 2
     );
