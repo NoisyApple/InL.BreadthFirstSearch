@@ -7,6 +7,7 @@ export default class Graph {
   static ADDING_NODE = 2;
   static CONNECTING_NODE = 3;
   static DELETING_NODE = 4;
+  static FINDING_PATH = 5;
 
   static NAMES = [
     "Harry",
@@ -52,6 +53,11 @@ export default class Graph {
     this.connectionNodes = {
       nodeA: undefined,
       nodeB: undefined,
+    };
+    this.breadthFirstSearch = {
+      nodeA: undefined,
+      nodeB: undefined,
+      path: [],
     };
     this.updateGraph = true;
     this.DOMElements = DOMElements;
@@ -102,9 +108,25 @@ export default class Graph {
       this.p5.line(aPos.x, aPos.y, bPos.x, bPos.y);
     });
 
+    // BFS path connections.
+    this.p5.push();
+    this.p5.stroke("#fb3640");
+    this.p5.strokeWeight(3);
+    this.breadthFirstSearch.path.forEach((n, i, path) => {
+      if (i > 0) {
+        this.p5.line(
+          path[i - 1].position.x,
+          path[i - 1].position.y,
+          n.position.x,
+          n.position.y
+        );
+      }
+    });
+    this.p5.pop();
+
     // Nodes.
     this.nodes.forEach((n) => {
-      n.draw();
+      n.draw(this);
     });
   }
 
@@ -254,5 +276,37 @@ export default class Graph {
         }
         break;
     }
+  }
+
+  findPath(nodeA, nodeB) {
+    let queue = [];
+    let checked = {};
+
+    queue.push(nodeA);
+    checked[nodeA.id] = { parent: null };
+
+    while (queue.length != 0) {
+      let current = queue.shift();
+      if (current.id == nodeB.id) {
+        break;
+      } else {
+        current.connectedNodes.forEach((cNode) => {
+          if (!checked.hasOwnProperty(cNode.id)) {
+            queue.push(cNode);
+            checked[cNode.id] = { parent: current };
+          }
+        });
+      }
+    }
+
+    let path = [nodeB];
+    let currentPathNode = checked[nodeB.id];
+
+    while (currentPathNode.parent != null) {
+      path = [currentPathNode.parent, ...path];
+      currentPathNode = checked[currentPathNode.parent.id];
+    }
+
+    this.breadthFirstSearch.path = path;
   }
 }

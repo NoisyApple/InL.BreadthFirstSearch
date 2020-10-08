@@ -16,7 +16,7 @@ export default class Node {
     this.label = Graph.NAMES[this.id % Graph.NAMES.length];
   }
 
-  draw() {
+  draw(graph) {
     let mouseVector = this.p5.createVector(
       this.p5.mouseX / this.controls.zoom - this.controls.x,
       this.p5.mouseY / this.controls.zoom - this.controls.y
@@ -31,15 +31,18 @@ export default class Node {
       this.p5.ellipse(this.position.x, this.position.y, this.diameter + 5);
     }
 
+    if (graph.breadthFirstSearch.path.includes(this)) {
+      this.p5.stroke("#fb3640");
+      this.p5.strokeWeight(3);
+      this.p5.ellipse(this.position.x, this.position.y, this.diameter + 8);
+    }
+
     this.p5.colorMode(this.p5.HSL);
     this.p5.fill(this.color, 50, 65);
     this.p5.stroke(this.color, 50, 45);
     this.p5.strokeWeight(2);
     this.p5.ellipse(this.position.x, this.position.y, this.diameter);
 
-    // this.p5.fill(this.color, 50, 45);
-    // this.p5.stroke(this.color, 50, 35);
-    // this.p5.noStroke();
     this.p5.textSize(18);
     this.p5.textStyle(this.p5.BOLD);
     this.p5.text(

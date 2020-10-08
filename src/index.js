@@ -8,8 +8,8 @@ setFavicon(); // Dinamic favicon is set.
 let width;
 let height;
 
-const k = 0.01; // Spring strength factor.
-const springLength = 100; // Spring rest length.
+const k = 0.09; // Spring strength factor.
+const springLength = 80; // Spring rest length.
 const r = 4; // Repulsion factor.
 const forceReduction = 0.98; // Force reduction factor.
 
@@ -26,8 +26,11 @@ let nodeShowUp;
 let nodeLabel;
 let editButton;
 let nodeID;
+let hueSlider;
 let sideBarConnectedNodes;
 let sideBarDeleteNodeButton;
+
+let sliderStyle;
 
 let playPauseButton;
 let selectNodeButton;
@@ -70,8 +73,11 @@ window.onload = () => {
   nodeLabel = document.querySelector("#NodeLabel");
   editButton = document.querySelector("#EditButton");
   nodeID = document.querySelector("#NodeID");
+  hueSlider = document.querySelector("#HueSlider");
   sideBarConnectedNodes = document.querySelector("#SideBarConnectedNodes");
   sideBarDeleteNodeButton = document.querySelector("#SideBarDeleteNodeButton");
+
+  sliderStyle = document.querySelector("[id='SliderStyle']");
 
   playPauseButton = document.querySelector("#PlayPauseButton");
   selectNodeButton = document.querySelector("#SelectNodeButton");
@@ -111,7 +117,7 @@ window.onload = () => {
       );
 
       renameNodeModal.style.display = "flex";
-      // sideBar.style.right = "-250px";
+      sideBar.style.right = "0px";
 
       // Show icon depending on updateGraph value.
       playIcon.style.display = !graph.updateGraph ? "block" : "none";
@@ -143,6 +149,11 @@ window.onload = () => {
             graph.connectNodes(actualNode, graph.getNode(bottomIndex));
         }
       }
+
+      graph.findPath(graph.nodes[0], graph.nodes[24]);
+
+      sideBar.style.right = "-250px";
+
       // EXAMPLE NODES ---
 
       // EXAMPLE NODES +++
@@ -231,6 +242,17 @@ function addDOMListeners() {
 
   renameNodeInput.addEventListener("input", () => {
     renameNodeInput.classList.remove("bad-input");
+  });
+
+  hueSlider.addEventListener("input", () => {
+    graph.selectedNode.color = hueSlider.value;
+    nodeShowUp.style.backgroundColor = `hsl(${hueSlider.value}deg, 50%, 65%)`;
+    nodeShowUp.style.borderColor = `hsl(${hueSlider.value}deg, 50%, 45%)`;
+
+    sliderStyle.innerHTML = `#HueSlider::-webkit-slider-thumb{
+      background-color: hsl(${hueSlider.value}deg, 50%, 65%) !important;
+      border: 3px solid hsl(${hueSlider.value}deg, 50%, 45%) !important;
+    }`;
   });
 
   renameNodeButton.addEventListener("click", setName);
@@ -376,6 +398,13 @@ function setSideBarData(node) {
 
   nodeLabel.textContent = node.label;
   nodeID.textContent = `ID: ${node.id}`;
+
+  hueSlider.value = node.color;
+
+  sliderStyle.innerHTML = `#HueSlider::-webkit-slider-thumb{
+    background-color: hsl(${node.color}deg, 50%, 65%) !important;
+    border: 3px solid hsl(${node.color}deg, 50%, 45%) !important;
+  }`;
 
   sideBarConnectedNodes.innerHTML = "";
 
