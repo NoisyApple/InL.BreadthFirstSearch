@@ -58,6 +58,7 @@ export default class Graph {
       nodeA: undefined,
       nodeB: undefined,
       path: [],
+      pathFound: false,
     };
     this.updateGraph = true;
     this.DOMElements = DOMElements;
@@ -273,6 +274,36 @@ export default class Graph {
       case Graph.DELETING_NODE:
         if (clickedNode !== undefined) {
           this.deleteNode(clickedNode);
+        }
+        break;
+
+      // Finding path.
+      case Graph.FINDING_PATH:
+        if (clickedNode !== undefined) {
+          if (
+            (this.breadthFirstSearch.nodeA == undefined &&
+              this.breadthFirstSearch.nodeB == undefined) ||
+            (this.breadthFirstSearch.nodeA != undefined &&
+              this.breadthFirstSearch.nodeB != undefined)
+          ) {
+            this.breadthFirstSearch = {
+              nodeA: undefined,
+              nodeB: undefined,
+              path: [],
+              pathFound: false,
+            };
+
+            this.breadthFirstSearch.nodeA = clickedNode;
+            this.breadthFirstSearch.path.push(clickedNode);
+          } else {
+            this.breadthFirstSearch.nodeB = clickedNode;
+            this.findPath(
+              this.breadthFirstSearch.nodeA,
+              this.breadthFirstSearch.nodeB
+            );
+
+            this.breadthFirstSearch.pathFound = true;
+          }
         }
         break;
     }

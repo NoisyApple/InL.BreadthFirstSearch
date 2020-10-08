@@ -93,7 +93,8 @@ body {
     }
 
     #AddNodeButton,
-    #CancelOptionButton {
+    #CancelOptionButton,
+    #FindPathButton {
       svg {
         width: 20px;
       }
@@ -113,7 +114,7 @@ body {
     height: 100%;
   }
 
-  #SideBar {
+  .sidebar {
     position: absolute;
     right: -250px;
     top: 50%;
@@ -127,13 +128,42 @@ body {
     transition: right 1s;
     display: flex;
     flex-direction: column;
+    padding: 10px;
+
+    #NodeInfoSideBarConnectedNodes,
+    #PathNodes {
+      flex: 1;
+      overflow: auto;
+      border-radius: 10px;
+      background-color: #4441;
+
+      &::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #4441;
+        border-radius: 0 10px 10px 0;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #888c;
+        border-radius: 0 10px 10px 0;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #888a;
+      }
+    }
 
     .node-show-up {
       background: hsl(180deg, 50%, 65%);
       border: 5px solid hsl(180deg, 50%, 45%);
       border-radius: 100%;
     }
+  }
 
+  #NodeInfoSideBar {
     .connected-node-block {
       display: flex;
       flex-direction: row;
@@ -163,43 +193,10 @@ body {
       flex-direction: column;
       flex: 1;
       overflow: auto;
-      margin: 5px 10px 0 10px;
+      margin-top: 5px;
     }
 
-    #SideBarConnectedNodes {
-      flex: 1;
-      overflow: auto;
-      border-radius: 10px;
-      background-color: #4441;
-
-      &::-webkit-scrollbar {
-        width: 10px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: #4441;
-        border-radius: 0 10px 10px 0;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: #888c;
-        border-radius: 0 10px 10px 0;
-      }
-
-      &::-webkit-scrollbar-thumb:hover {
-        background: #888a;
-      }
-    }
-
-    .connected-node {
-      width: 20px;
-      height: 20px;
-      border: 2.5px solid hsl(180deg, 50%, 45%);
-      margin-right: 5px;
-    }
-
-    #SideBarHeader {
-      margin: 10px 10px 0 10px;
+    #NodeInfoSideBarHeader {
       display: flex;
 
       #NodeShowUp {
@@ -214,7 +211,7 @@ body {
       align-items: center;
 
       #NodeLabel {
-        margin: 0 10px;
+        margin-right: 10px;
       }
 
       svg {
@@ -232,8 +229,15 @@ body {
       }
     }
 
+    .connected-node {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid hsl(180deg, 50%, 45%);
+      margin-right: 5px;
+    }
+
     #HueBlock {
-      margin: 0 10px;
+      margin-right: 10px;
 
       #HueSlider {
         -webkit-appearance: none;
@@ -263,11 +267,10 @@ body {
       }
     }
 
-    #SideBarFooter {
-      padding: 10px;
-      border-radius: 0 0 0 20px;
+    #NodeInfoSideBarFooter {
+      margin-top: 10px;
 
-      #SideBarDeleteNodeButton {
+      #NodeInfoSideBarDeleteNodeButton {
         width: 100%;
         border-radius: 10px;
         border: none;
@@ -289,6 +292,49 @@ body {
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  #PathSideBar {
+    #PathNodes {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .path-node-block {
+        display: flex;
+        align-items: center;
+
+        .path-node {
+          width: 20px;
+          height: 20px;
+          border: 2.5px solid hsl(180deg, 50%, 45%);
+          margin-right: 5px;
+        }
+      }
+
+      .arrow-block {
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg.svg-path-arrow {
+          height: 20px;
+          fill: #676767;
+        }
+      }
+
+      .begin-end-node {
+        font-weight: bold;
+
+        .path-node {
+          width: 30px;
+          height: 30px;
+          border: 4px solid hsl(180deg, 50%, 45%);
         }
       }
     }

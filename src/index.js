@@ -9,38 +9,50 @@ let width;
 let height;
 
 const k = 0.09; // Spring strength factor.
-const springLength = 80; // Spring rest length.
+const springLength = 100; // Spring rest length.
 const r = 4; // Repulsion factor.
 const forceReduction = 0.98; // Force reduction factor.
 
-let sideBarSelectedNode = undefined;
+let nodeInfoSideBarSelectedNode = undefined;
 
-// DOM ELEMENTS.
+// DOM ELEMENTS +++
+
+// Rename node modal.
 let renameNodeModal;
 let exitModalButton;
 let renameNodeInput;
 let renameNodeButton;
 
-let sideBar;
+// Node info sidebar.
+let nodeInfoSideBar;
 let nodeShowUp;
 let nodeLabel;
 let editButton;
 let nodeID;
 let hueSlider;
-let sideBarConnectedNodes;
-let sideBarDeleteNodeButton;
+let nodeInfoSideBarConnectedNodes;
+let nodeInfoSideBarDeleteNodeButton;
 
 let sliderStyle;
 
+// Path sidebar.
+let pathSideBar;
+let pathNodes;
+
+// Option buttons.
 let playPauseButton;
+let findPathButton;
 let selectNodeButton;
 let addNodeButton;
 let connectNodeButton;
 let deleteNodeButton;
 let cancelOptionButton;
 
+// Play/Pause icons.
 let playIcon;
 let pauseIcon;
+
+// DOM ELEMENTS ---
 
 // Graph reference.
 let graph;
@@ -68,19 +80,27 @@ window.onload = () => {
   renameNodeInput = document.querySelector("#RenameNodeInput");
   renameNodeButton = document.querySelector("#RenameNodeButton");
 
-  sideBar = document.querySelector("#SideBar");
+  nodeInfoSideBar = document.querySelector("#NodeInfoSideBar");
   nodeShowUp = document.querySelector("#NodeShowUp");
   nodeLabel = document.querySelector("#NodeLabel");
   editButton = document.querySelector("#EditButton");
   nodeID = document.querySelector("#NodeID");
   hueSlider = document.querySelector("#HueSlider");
-  sideBarConnectedNodes = document.querySelector("#SideBarConnectedNodes");
-  sideBarDeleteNodeButton = document.querySelector("#SideBarDeleteNodeButton");
+  nodeInfoSideBarConnectedNodes = document.querySelector(
+    "#NodeInfoSideBarConnectedNodes"
+  );
+  nodeInfoSideBarDeleteNodeButton = document.querySelector(
+    "#NodeInfoSideBarDeleteNodeButton"
+  );
 
   sliderStyle = document.querySelector("[id='SliderStyle']");
 
+  pathSideBar = document.querySelector("#PathSideBar");
+  pathNodes = document.querySelector("#PathNodes");
+
   playPauseButton = document.querySelector("#PlayPauseButton");
   selectNodeButton = document.querySelector("#SelectNodeButton");
+  findPathButton = document.querySelector("#FindPathButton");
   addNodeButton = document.querySelector("#AddNodeButton");
   connectNodeButton = document.querySelector("#ConnectNodeButton");
   deleteNodeButton = document.querySelector("#DeleteNodeButton");
@@ -117,7 +137,8 @@ window.onload = () => {
       );
 
       renameNodeModal.style.display = "flex";
-      sideBar.style.right = "0px";
+      nodeInfoSideBar.style.right = "0px";
+      pathSideBar.style.right = "0px";
 
       // Show icon depending on updateGraph value.
       playIcon.style.display = !graph.updateGraph ? "block" : "none";
@@ -150,9 +171,8 @@ window.onload = () => {
         }
       }
 
-      graph.findPath(graph.nodes[0], graph.nodes[24]);
-
-      sideBar.style.right = "-250px";
+      nodeInfoSideBar.style.right = "-250px";
+      pathSideBar.style.right = "-250px";
 
       // EXAMPLE NODES ---
 
@@ -264,7 +284,7 @@ function addDOMListeners() {
       renameNodeModal.style.visibility = "hidden";
       renameNodeModal.style.opacity = "0";
       graph.updateGraph = true;
-      setSideBarData(graph.selectedNode);
+      setNodeInfoSideBarData(graph.selectedNode);
     } else {
       renameNodeInput.classList.add("bad-input");
     }
@@ -290,10 +310,17 @@ function addDOMListeners() {
     actionSelected(Graph.DELETING_NODE)
   );
 
-  sideBarDeleteNodeButton.addEventListener("click", () => {
-    if (sideBarSelectedNode != undefined && graph.selectedNode != undefined) {
-      graph.disconnectNodes(sideBarSelectedNode, graph.selectedNode);
-      setSideBarData(graph.selectedNode);
+  findPathButton.addEventListener("click", () => {
+    actionSelected(Graph.FINDING_PATH);
+  });
+
+  nodeInfoSideBarDeleteNodeButton.addEventListener("click", () => {
+    if (
+      nodeInfoSideBarSelectedNode != undefined &&
+      graph.selectedNode != undefined
+    ) {
+      graph.disconnectNodes(nodeInfoSideBarSelectedNode, graph.selectedNode);
+      setNodeInfoSideBarData(graph.selectedNode);
     }
   });
 }
@@ -308,10 +335,7 @@ function toggleGraphUpdate() {
 
 // Updates graph's action.
 function actionSelected(action) {
-  selectNodeButton.classList.remove("option-selected");
-  addNodeButton.classList.remove("option-selected");
-  connectNodeButton.classList.remove("option-selected");
-  deleteNodeButton.classList.remove("option-selected");
+  reset();
 
   switch (action) {
     case Graph.NONE:
@@ -338,7 +362,34 @@ function actionSelected(action) {
       cancelOptionButton.removeAttribute("disabled");
       graph.action = Graph.DELETING_NODE;
       break;
+    case Graph.FINDING_PATH:
+      findPathButton.classList.add("option-selected");
+      cancelOptionButton.removeAttribute("disabled");
+      graph.action = Graph.FINDING_PATH;
+      break;
   }
+}
+
+function reset() {
+  selectNodeButton.classList.remove("option-selected");
+  findPathButton.classList.remove("option-selected");
+  addNodeButton.classList.remove("option-selected");
+  connectNodeButton.classList.remove("option-selected");
+  deleteNodeButton.classList.remove("option-selected");
+
+  nodeInfoSideBar.style.right = "-250px";
+  pathSideBar.style.right = "-250px";
+  graph.selectedNode = undefined;
+  graph.connectionNodes = {
+    nodeA: undefined,
+    nodeB: undefined,
+  };
+  graph.breadthFirstSearch = {
+    nodeA: undefined,
+    nodeB: undefined,
+    path: [],
+    pathFound: false,
+  };
 }
 
 // ZOOM HANDLER +++
@@ -381,18 +432,78 @@ function mouseReleased(p5) {
 
   graph.handleClick();
 
-  if (graph.action == Graph.SELECTING_NODE) {
-    if (graph.selectedNode != undefined) {
-      sideBar.style.right = "0px";
-      setSideBarData(graph.selectedNode);
-    } else {
-      sideBar.style.right = "-250px";
-    }
+  switch (graph.action) {
+    case Graph.SELECTING_NODE:
+      if (graph.selectedNode != undefined) {
+        nodeInfoSideBar.style.right = "0px";
+        setNodeInfoSideBarData(graph.selectedNode);
+      } else {
+        nodeInfoSideBar.style.right = "-250px";
+      }
+      break;
+    case Graph.FINDING_PATH:
+      if (graph.breadthFirstSearch.pathFound) {
+        pathSideBar.style.right = "0px";
+        setPathSideBarData(graph.breadthFirstSearch.path);
+      } else {
+        pathSideBar.style.right = "-250px";
+      }
+      break;
   }
 }
 
-// SideBar data generation.
-function setSideBarData(node) {
+function setPathSideBarData(path) {
+  pathNodes.innerHTML = "";
+
+  path.forEach((node, i, p) => {
+    let pathNodeBlock = document.createElement("div");
+    let pathNodeShowUp = document.createElement("div");
+    let pathNodeLabel = document.createElement("div");
+
+    pathNodeBlock.classList.add("path-node-block");
+
+    if (i == 0 || i == p.length - 1) {
+      pathNodeBlock.classList.add("begin-end-node");
+    }
+
+    pathNodeShowUp.classList.add("path-node");
+    pathNodeShowUp.classList.add("node-show-up");
+
+    pathNodeShowUp.style.backgroundColor = `hsl(${node.color}deg, 50%, 65%)`;
+    pathNodeShowUp.style.borderColor = `hsl(${node.color}deg, 50%, 45%)`;
+
+    pathNodeLabel.textContent = `${node.label} => ${node.id}`;
+
+    pathNodeBlock.appendChild(pathNodeShowUp);
+    pathNodeBlock.appendChild(pathNodeLabel);
+
+    pathNodes.appendChild(pathNodeBlock);
+
+    if (i < p.length - 1) {
+      let arrowBlock = document.createElement("div");
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+      arrowBlock.classList.add("arrow-block");
+
+      svg.classList.add("svg-path-arrow");
+      svg.setAttribute("viewBox", "0 0 256 512");
+
+      path.setAttribute(
+        "d",
+        "M168 345.941V44c0-6.627-5.373-12-12-12h-56c-6.627 0-12 5.373-12 12v301.941H41.941c-21.382 0-32.09 25.851-16.971 40.971l86.059 86.059c9.373 9.373 24.569 9.373 33.941 0l86.059-86.059c15.119-15.119 4.411-40.971-16.971-40.971H168z"
+      );
+
+      svg.appendChild(path);
+      arrowBlock.appendChild(svg);
+
+      pathNodes.appendChild(arrowBlock);
+    }
+  });
+}
+
+// NodeInfoSideBar data generation.
+function setNodeInfoSideBarData(node) {
   nodeShowUp.style.backgroundColor = `hsl(${node.color}deg, 50%, 65%)`;
   nodeShowUp.style.borderColor = `hsl(${node.color}deg, 50%, 45%)`;
 
@@ -406,14 +517,14 @@ function setSideBarData(node) {
     border: 3px solid hsl(${node.color}deg, 50%, 45%) !important;
   }`;
 
-  sideBarConnectedNodes.innerHTML = "";
+  nodeInfoSideBarConnectedNodes.innerHTML = "";
 
   node.connectedNodes.forEach((cNode) => {
     let cNodeBlock = document.createElement("div");
     let cNodeShowUp = document.createElement("div");
     let cNodeInfo = document.createElement("div");
 
-    sideBarDeleteNodeButton.setAttribute("disabled", "");
+    nodeInfoSideBarDeleteNodeButton.setAttribute("disabled", "");
 
     cNodeBlock.classList.add("connected-node-block");
     cNodeBlock.addEventListener("click", () =>
@@ -430,15 +541,15 @@ function setSideBarData(node) {
     cNodeBlock.appendChild(cNodeShowUp);
     cNodeBlock.appendChild(cNodeInfo);
 
-    sideBarConnectedNodes.appendChild(cNodeBlock);
+    nodeInfoSideBarConnectedNodes.appendChild(cNodeBlock);
   });
 
   // Click handler for each node block.
   function nodeBlockClickHandler(element, cNode) {
     let nodeBlocks = document.querySelectorAll(".connected-node-block");
 
-    sideBarSelectedNode = cNode;
-    sideBarDeleteNodeButton.removeAttribute("disabled");
+    nodeInfoSideBarSelectedNode = cNode;
+    nodeInfoSideBarDeleteNodeButton.removeAttribute("disabled");
 
     Array.from(nodeBlocks).forEach((nBlock) => {
       nBlock.classList.remove("selected-node-block");
